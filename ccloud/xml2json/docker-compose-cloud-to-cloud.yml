@@ -1,0 +1,26 @@
+---
+version: '3.5'
+services:
+
+  connect:
+    image: vdesabou/kafka-docker-playground-connect:${CONNECT_TAG}
+    environment:
+      CONNECT_PLUGIN_PATH: /usr/share/confluent-hub-components/confluentinc-kafka-connect-replicator,/usr/share/confluent-hub-components/jcustenborder-kafka-connect-transform-xml
+      CONNECT_REST_EXTENSION_CLASSES: io.confluent.connect.replicator.monitoring.ReplicatorMonitoringExtension
+      CLASSPATH: "/usr/share/confluent-hub-components/confluentinc-kafka-connect-replicator/lib/replicator-rest-extension-${TAG_BASE}.jar:/usr/share/java/monitoring-interceptors/*:/usr/share/confluent-hub-components/jcustenborder-kafka-connect-transform-xml/lib/*"
+    command: 
+      - bash 
+      - -c 
+      - |
+        echo "Installing connector plugins"
+        confluent-hub install --no-prompt jcustenborder/kafka-connect-transform-xml:latest
+        # Launch the Kafka Connect worker
+        /etc/confluent/docker/run &
+        #
+        # Don't exit
+        sleep infinity
+    volumes:
+      - $PWD/schema:/schema
+      - $PWD/client.properties:/client.properties
+
+ 
